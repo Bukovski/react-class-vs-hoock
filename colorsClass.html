@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React Color gallery</title>
+  <style>
+    @import url(https://fonts.googleapis.com/css?family=Roboto+Condensed:400,700,300);
+    
+    body {
+      background: #e0ffff;
+      font-family: Roboto Condensed, sans-serif
+    }
+    
+    h2 {
+      color: #00008b;
+      font-size: 2em
+    }
+    
+    .form-field,
+    .intro,
+    h2 {
+      text-align: center
+    }
+    
+    .form-field {
+      margin-top: 1em
+    }
+    
+    .submit-button {
+      font-size: 1.1em;
+      padding: .3em;
+      border-radius: 5px;
+      border-style: none;
+      background-color: #8a2be2;
+      color: #fff
+    }
+    
+    .submit-button:hover {
+      cursor: pointer;
+      background-color: #6495ed
+    }
+    
+    .library-header {
+      text-align: center;
+      margin: 1.5em auto;
+      margin-bottom: 0;
+      font-size: 1.5em;
+      color: #00008b
+    }
+    
+    .table-data {
+      border: .1em solid #f0f8ff;
+      border-radius: .5em;
+      padding: .3em
+    }
+    
+    .td-click {
+      width: 1em;
+      font-size: .8em;
+      background: red;
+      color: #fff;
+      padding: .6em;
+      text-align: center
+    }
+    
+    .td-click:hover {
+      background: crimson;
+      cursor: pointer
+    }
+    
+    .table-container {
+      min-width: 19em;
+      margin: 1em auto;
+      margin-bottom: 0
+    }
+    
+    .tiles {
+      width: 15em;
+      margin: 1em auto
+    }
+    
+    .tile {
+      height: 2em;
+      width: 2em;
+      border-radius: 10px;
+      display: inline-block;
+      margin: .2em;
+      transition: transform 1s ease;
+      cursor: pointer;
+    }
+    
+    .tile:hover {
+      transform: rotate(360deg);
+    }
+    
+    .form-input {
+      font-size: 1.1em;
+      padding: .25em;
+      border-radius: 5px;
+      border: .01em solid grey;
+    }
+    
+    .td-color {
+      border-width: 0.05em;
+      border-style: solid;
+      border-color: lightgrey;
+      border-radius: 5px;
+      padding: 0.3em;
+      padding-left: .75em;
+      background-color: white;
+    }
+  </style>
+</head>
+<body>
+
+
+<div class="top">
+  <header class="masthead">
+    <h2>React Color gallery</h2>
+  </header>
+  
+  <div id="root"></div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.0.0-alpha-2bf2e76d3-20210826/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.0.0-alpha-2bf2e76d3-20210826/umd/react-dom.production.min.js"></script>
+<script type="text/babel">
+  
+  const COLOR_ONLY = [ "red", "blue", "yellow", "purple", "green", "pink", "orange", "brown" ];
+  
+  
+  function Table({ colors, onRemoveColor }) {
+    const listBody = colors.map(color => (
+      <tr key={ color }>
+        <td className="td-color">{ color }</td>
+        <td className="table-data td-click" onClick={ onRemoveColor(color) }>delete</td>
+      </tr>
+    ));
+    
+    return (
+      <table className="table-container">
+        <tbody>
+        { listBody }
+        </tbody>
+      </table>
+    )
+  }
+  
+  
+  class Tiles extends React.Component {
+    constructor() {
+      super();
+  
+      this.state = {
+        bgColor: ""
+      };
+      
+      this._linkBody = {};
+    }
+    
+    
+    componentDidMount() {
+      this._linkBody = document.body;
+      this._linkBody.addEventListener('changeBgColor', this.changeBackground);
+    }
+  
+    componentWillUnmount() {
+      this._linkBody.removeEventListener('changeBgColor', this.changeBackground);
+      this._linkBody = {};
+    }
+  
+    componentDidUpdate(prevProps, prevState) {
+	    // called most recently. Everything is already rendered on the page
+      // pull our events and set the color for the background of the page
+      if (prevState.bgColor !== this.state.bgColor) {
+        const event = new Event("changeBgColor", { bubbles: true });
+        this._linkBody.dispatchEvent(event);
+      }
+    }
+  
+    
+    changeBackground = () => {
+      const { bgColor } = this.state;
+      
+      this._linkBody.style.background = bgColor;
+    };
+    
+    handleColorPage = (color) => () => {
+      this.setState(() => ({
+        bgColor: color
+      }));
+    };
+    
+    render() {
+      const { colors } = this.props;
+  
+      const listTile = colors.map(color => (
+        <div
+          key={ color }
+          className="tile"
+          style={{ backgroundColor: color }}
+          onClick={ this.handleColorPage(color) }
+        />
+      ));
+  
+      return (
+        <div className="tiles">
+          { listTile }
+        </div>
+      )
+    }
+  }
+  
+  
+  class Form extends React.Component {
+    constructor() {
+      super();
+      
+      this.state = {
+        value: ""
+      };
+      
+      this.textInput = React.createRef();
+    }
+    
+    
+    componentDidMount() {
+      this.lengthColor();
+      this.focusField();
+    }
+  
+    shouldComponentUpdate(nextProps, nextState) {
+      return (this.state.value !== nextState.value);
+    }
+    
+    
+    handleChange = (event) => {
+      const value = event.target.value.trim();
+      
+      this.setState({
+        value: value
+      })
+    };
+    
+    handleSubmit = (event) => {
+      event.preventDefault();
+      
+      const { value } = this.state;
+      
+      if (COLOR_ONLY.includes(value)) {
+        this.props.onDataForm(value);
+        
+        this.clearForm();
+        this.focusField();
+      } else if (!value.trim().length) {
+        alert(`Please fill in the field before submitting the form`)
+      } else {
+        alert(`${ value } does not match, please enter correct color`)
+      }
+    };
+    
+    clearForm() {
+      this.setState({ value: "" })
+    }
+    
+    focusField() {
+      this.textInput.current.focus();
+    }
+    
+    lengthColor() {
+      const edge = {
+        min: 0,
+        max: 0
+      };
+      
+      COLOR_ONLY.forEach((color) => {
+        const colorLen = color.length;
+        
+        if (edge.max < colorLen) {
+          edge.max = colorLen
+        }
+        
+        if (edge.min > colorLen || edge.min === 0) {
+          edge.min = colorLen;
+        }
+      });
+  
+      this.textInput.current.min = edge.min;
+      this.textInput.current.max = edge.max;
+    }
+    
+    render() {
+      const { value } = this.state;
+      
+      return (
+        <form className="form-field" onSubmit={ this.handleSubmit }>
+          <input
+            type="text"
+            className="form-input"
+            placeholder="CSS color"
+            ref={ this.textInput }
+            onChange={ this.handleChange }
+            value={ value }
+          />
+          <button className="submit-button" type="submit">submit</button>
+        </form>
+      )
+    }
+  }
+  
+  
+  class App extends React.Component {
+    constructor() {
+      super();
+      
+      this.state = {
+        colors: [ "yellow", "purple", "orange", "brown" ]
+      };
+    }
+    
+    handleDataForm = (value) => {
+      const { colors } = this.state;
+      
+      if (colors.includes(value)) {
+        alert(`${ value } color is already in the list, please enter another`)
+      } else if (colors.length > 5) {
+        alert("Number of colors no more than 6")
+      } else {
+        this.setState(({ colors }) => ({
+          colors: [ ...colors, value ]
+        }))
+      }
+    };
+    
+    handleRemoveColor = (color) => (event) => {
+      const newColors = this.state.colors.filter(elem => elem !== color);
+      
+      this.setState({
+        colors: newColors
+      })
+    };
+    
+    
+    render() {
+      const { colors } = this.state;
+      
+      return(
+        <React.Fragment>
+          <Form onDataForm={ this.handleDataForm } />
+          
+          <div>
+            <div className="library-header">List Colors</div>
+            
+            <Table colors={ colors } onRemoveColor={ this.handleRemoveColor } />
+            
+            <Tiles colors={ colors } />
+          </div>
+        </React.Fragment>
+      )
+    }
+  }
+  
+  
+  ReactDOM.render(<App />, document.getElementById("root"))
+
+</script>
+</body>
+</html>
