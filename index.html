@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React Color gallery</title>
+  <link rel="stylesheet" type="text/css" href="./style.css" />
+</head>
+<body>
+
+
+<div class="top">
+  <header class="masthead">
+    <h2>React Color gallery</h2>
+  </header>
+  
+  <div id="root"></div>
+</div>
+
+
+<script defer src="//cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+<script defer src="//cdnjs.cloudflare.com/ajax/libs/react/18.0.0-alpha-2bf2e76d3-20210826/umd/react.production.min.js"></script>
+<script defer src="//cdnjs.cloudflare.com/ajax/libs/react-dom/18.0.0-alpha-2bf2e76d3-20210826/umd/react-dom.production.min.js"></script>
+<script type="text/babel">
+	
+	const COLOR_ONLY = [ "red", "blue", "yellow", "purple", "green", "pink", "orange", "brown" ];
+	
+	
+	function Table({ colors = [], onRemoveColor = () => {} }) {
+		const listBody = colors.map(color => (
+			<tr key={ color }>
+				<td className="td-color">{ color }</td>
+				<td className="table-data td-click" onClick={ onRemoveColor(color) }>delete</td>
+			</tr>
+		));
+		
+		return (
+			<table className="table-container">
+				<tbody>
+				{ listBody }
+				</tbody>
+			</table>
+		)
+	}
+	
+	
+	const Tiles = props => {
+		const { colors = [] } = props;
+		
+		const [ bgColor, setBgColor ] = React.useState("");
+		let _linkBody = {};
+		
+		
+		const changeBackground = () => {
+			_linkBody.style.background = bgColor;
+		};
+		
+		const handleColorPage = (color) => () => {
+			setBgColor(color);
+		};
+		
+		React.useEffect(() => {
+			_linkBody = document.body;
+			_linkBody.addEventListener('changeBgColor', changeBackground);
+			
+			return () => {
+				_linkBody.removeEventListener('changeBgColor', changeBackground);
+				_linkBody = {};
+			}
+		})
+		
+		React.useEffect(() => {
+			const event = new Event("changeBgColor", { bubbles: true });
+			_linkBody.dispatchEvent(event);
+		}, [ bgColor ]); // if (prevState.bgColor !== this.state.bgColor) {
+		
+		
+		const listTile = colors.map(color => (
+			<div
+				key={ color }
+				className="tile"
+				style={{ backgroundColor: color }}
+				onClick={ handleColorPage(color) }
+			/>
+		));
+		
+		return (
+			<div className="tiles">
+				{ listTile }
+			</div>
+		)
+	}
+	
+	
+	const Form = React.memo(props => {
+		const { onDataForm = () => {} } = props;
+		
+		const [ value, setValue ] = React.useState("");
+		const textInput = React.useRef();
+		
+		const clearForm = () => {
+			setValue("");
+		}
+		
+		const focusField = () => {
+			textInput.current.focus();
+		}
+		
+		const lengthColor = () => {
+			const edge = {
+				min: 0,
+				max: 0
+			};
+			
+			COLOR_ONLY.forEach((color) => {
+				const colorLen = color.length;
+				
+				if (edge.max < colorLen) {
+					edge.max = colorLen
+				}
+				
+				if (edge.min > colorLen || edge.min === 0) {
+					edge.min = colorLen;
+				}
+			});
+			
+			textInput.current.min = edge.min;
+			textInput.current.max = edge.max;
+		}
+		
+		const handleChange = (event) => {
+			const value = event.target.value.trim();
+			setValue(value);
+		};
+		
+		const handleSubmit = (event) => {
+			event.preventDefault();
+			
+			if (COLOR_ONLY.includes(value)) {
+				onDataForm(value);
+				
+				clearForm();
+				focusField();
+			} else if (!value.trim().length) {
+				alert(`Заполните поле перед отправкой формы`)
+			} else {
+				alert(`${ value } не подходит, введите корректный цвет`)
+			}
+		};
+		
+		
+		React.useEffect(() => {
+			lengthColor();
+			focusField();
+		}, []);
+		// shouldComponentUpdate(nextProps, nextState) {
+		// 	return (this.state.value !== nextState.value);
+		// }
+		
+		return (
+			<form className="form-field" onSubmit={ handleSubmit }>
+				<input
+					type="text"
+					className="form-input"
+					placeholder="CSS color"
+					ref={ textInput }
+					onChange={ handleChange }
+					value={ value }
+				/>
+				<button className="submit-button" type="submit">submit</button>
+			</form>
+		)
+	})
+	
+	
+	const App = props => {
+		const [ colors, setColors ] = React.useState([ "yellow", "purple", "orange", "brown" ]);
+		const valueFromRef = React.useRef();
+		
+		valueFromRef.current = colors;
+		
+		
+		const handleDataForm = React.useCallback((value) => {
+			const colorsRef = valueFromRef.current;
+			
+			if (colorsRef.includes(value)) {
+				alert(`${ value } color is already in the list, please enter another`)
+			} else if (colorsRef.length > 5) {
+				alert("Number of colors no more than 6")
+			} else {
+				setColors(colors => ([ ...colors, value ]))
+			}
+		}, [])
+		
+		
+		const handleRemoveColor = (color) => (event) => {
+			const newColors = colors.filter(elem => elem !== color);
+			setColors(newColors)
+		};
+		
+		
+		return(
+			<React.Fragment>
+				<div className="library-header">
+					{ COLOR_ONLY.join(', ') }
+				</div>
+				<Form onDataForm={ handleDataForm } />
+				
+				<div>
+					
+					<div className="library-header">List Colors</div>
+					
+					<Table colors={ colors } onRemoveColor={ handleRemoveColor } />
+					
+					<Tiles colors={ colors } />
+				</div>
+			</React.Fragment>
+		)
+	}
+	
+	
+	ReactDOM.render(<App />, document.getElementById("root"))
+
+</script>
+</body>
+</html>

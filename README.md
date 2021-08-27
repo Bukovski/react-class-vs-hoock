@@ -1,4 +1,4 @@
-# React Class vs Hook
+# React Class vs Hock
 
 ## Comparison of classes and hooks, using the life cycle components as an example.
 
