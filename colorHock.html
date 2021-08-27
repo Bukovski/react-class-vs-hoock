@@ -17,10 +17,11 @@
 </div>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.0.0-alpha-2bf2e76d3-20210826/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.0.0-alpha-2bf2e76d3-20210826/umd/react-dom.production.min.js"></script>
+<script defer src="//cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+<script defer src="//cdnjs.cloudflare.com/ajax/libs/react/18.0.0-alpha-2bf2e76d3-20210826/umd/react.production.min.js"></script>
+<script defer src="//cdnjs.cloudflare.com/ajax/libs/react-dom/18.0.0-alpha-2bf2e76d3-20210826/umd/react-dom.production.min.js"></script>
 <script type="text/babel">
+ 
 	const COLOR_ONLY = [ "red", "blue", "yellow", "purple", "green", "pink", "orange", "brown" ];
 	
 	
@@ -43,7 +44,7 @@
 	
 	
 	const Tiles = props => {
-		const { colors } = props;
+		const { colors = [] } = props;
 		
 		const [ bgColor, setBgColor ] = React.useState("");
 		let _linkBody = {};
